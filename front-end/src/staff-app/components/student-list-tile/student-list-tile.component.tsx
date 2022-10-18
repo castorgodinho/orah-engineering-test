@@ -1,16 +1,54 @@
-import React from "react"
+import React, { useContext, useEffect } from "react"
 import styled from "styled-components"
 import { Spacing, BorderRadius, FontWeight } from "shared/styles/styles"
 import { Images } from "assets/images"
 import { Colors } from "shared/styles/colors"
 import { Person, PersonHelper } from "shared/models/person"
 import { RollStateSwitcher } from "staff-app/components/roll-state/roll-state-switcher.component"
+import { RolllStateType } from "shared/models/roll"
+import { StudentContext } from "shared/helpers/student-context"
+import { RollcallContext } from "shared/helpers/rollcall-context"
 
 interface Props {
   isRollMode?: boolean
   student: Person
 }
 export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
+
+  const { stateList, setStateList } = useContext(RollcallContext);
+  const { students, setStudents } = useContext(StudentContext);
+
+  const onStateChange = (action: RolllStateType) => {
+
+
+    let temp_student = [];
+    students.forEach(ele => {
+      if (ele.id === student.id){
+        temp_student.push({ ...ele, status: action })
+      }else{
+        temp_student.push(ele)
+      }
+    })
+    setStudents(temp_student);
+
+
+    temp_student = [];
+    let found:boolean = false;
+    stateList.forEach(ele => {
+      if (ele.student_id === student.id){
+        found = true;
+        temp_student.push({ student_id: student.id, roll_state: action })
+      }else{
+        temp_student.push(ele)
+      }
+    })
+    if(!found){
+      setStateList( [...stateList, { student_id: student.id , roll_state: action } ]);
+    }else{
+      setStateList(temp_student);
+    }
+  }
+
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>
@@ -19,12 +57,14 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
       </S.Content>
       {isRollMode && (
         <S.Roll>
-          <RollStateSwitcher />
+          <RollStateSwitcher onStateChange={onStateChange} initialState={student.status} />
         </S.Roll>
       )}
     </S.Container>
   )
 }
+
+
 
 const S = {
   Container: styled.div`

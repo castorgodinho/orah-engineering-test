@@ -2,6 +2,7 @@ export interface Person {
   id: number
   first_name: string
   last_name: string
+  status: string
   photo_url?: string
 }
 
